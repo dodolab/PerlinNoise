@@ -12,8 +12,9 @@ Perlin Noise for CPU and CUDA
 
 ## Command Line
 
+``
 PerlinNoise.exe <width> <height> <persistence> <octaves> <zoom> <seed> <outputImg>
-
+``
 * Width - width of the image in pixels
 * Height - height of the image in pixels
 * Persistence - calculation persistence (multiplier of amplitude in each iteration)
