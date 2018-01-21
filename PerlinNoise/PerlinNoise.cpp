@@ -6,22 +6,20 @@
 #include <math.h> 
 
 using namespace std;
-#include "stdafx.h"
 #include <time.h>
 
 
 // perlin noise generator
-class PerlinNoise{
+class PerlinNoise {
 private:
 	int seed;
 public:
 
-	PerlinNoise(int seed) : seed(seed){}
+	PerlinNoise(int seed) : seed(seed) {}
 
 
 	// calculates perlin noise at specified coordinates, returns value between -1 and 1
-	float PerlinNoise2D(int x, int y, float persistence, int octaves, float zoom)
-	{
+	float PerlinNoise2D(int x, int y, float persistence, int octaves, float zoom) {
 		// total output noise value
 		float total = 0.0f;
 		// initial frequency
@@ -30,8 +28,7 @@ public:
 		float amplitude = 1.0f;
 
 		// for each octave
-		for (int i = 0; i < octaves; i++)
-		{
+		for (int i = 0; i < octaves; i++) {
 			// calculate noise
 			total = total + InterpolatedNoise(x * frequency, y * frequency) * amplitude;
 			// set frequency and amplitude
@@ -42,31 +39,28 @@ public:
 		}
 
 		// fix bound values
-		if(total < -1) total = -1;
-		if(total > 1) total = 1;
+		if (total < -1) total = -1;
+		if (total > 1) total = 1;
 		return total;
 	}
 
-	void PerlinNoise2DPlane(unsigned char* data, int width, int height, float persistence, int octaves, float zoom){
+	void PerlinNoise2DPlane(unsigned char* data, int width, int height, float persistence, int octaves, float zoom) {
 		// for each pixel, generate its perlin value and write it into RGB channel
-		for(int i=0; i<width; i++)
-		{
-			for(int j=0; j<height; j++)
-			{
-				float val = this->PerlinNoise2D(i,j,persistence,octaves, zoom);
-				float colorVal = (val+1)*127;
+		for (int i = 0; i < width; i++) {
+			for (int j = 0; j < height; j++) {
+				float val = this->PerlinNoise2D(i, j, persistence, octaves, zoom);
+				float colorVal = (val + 1) * 127;
 
-				data[(i+j*width)*3+2] = (unsigned char)(colorVal);
-				data[(i+j*width)*3+1] = (unsigned char)(colorVal);
-				data[(i+j*width)*3+0] = (unsigned char)(colorVal);
+				data[(i + j*width) * 3 + 2] = (unsigned char)(colorVal);
+				data[(i + j*width) * 3 + 1] = (unsigned char)(colorVal);
+				data[(i + j*width) * 3 + 0] = (unsigned char)(colorVal);
 			}
 		}
 	}
 
 private:
 	// gets interpolated noise for various levels of zooming
-	float InterpolatedNoise(float x, float y)
-	{
+	float InterpolatedNoise(float x, float y) {
 		float i1, i2;
 		// interpolate according to X for bottom part, parameter is fraction part of x
 		i1 = CosineInterpolation(SmoothNoise((int)x, (int)y), SmoothNoise((int)(x + 1), (int)(y)), x - ((int)(x)));
@@ -77,9 +71,8 @@ private:
 	}
 
 	// linear coherent-noise function
-	float Noise(int x, int y)
-	{
-		int n = x+y*seed;
+	float Noise(int x, int y) {
+		int n = x + y*seed;
 		// spread information contained in input value across all bits
 		n ^= (n << 13);
 		// spread information across all domains, using three magnitudes
@@ -89,8 +82,7 @@ private:
 		return output;
 	}
 
-	float SmoothNoise(int x, int y)
-	{
+	float SmoothNoise(int x, int y) {
 		/*
 		*  |x-1,y+1| x ,y+1|x+1,y+1|
 		*  |x-1,y  | x ,y  |x+1,y  |
@@ -111,8 +103,7 @@ private:
 	// v1: first value to interpolate between
 	// v2: second value to interpolate between
 	// x: interpolating parameter
-	float CosineInterpolation(float v1, float v2, float x)
-	{
+	float CosineInterpolation(float v1, float v2, float x) {
 		float f = (float)(1 - cos(x * 3.1415927)) * 0.5f;
 		return v1 * (1 - f) + v2 * f;
 	}
@@ -120,17 +111,17 @@ private:
 
 
 // bitmap decoder
-class BmpDecoder{
+class BmpDecoder {
 private:
 	int width;
 	int height;
 public:
-	BmpDecoder(int width, int height) : width(width), height(height){
+	BmpDecoder(int width, int height) : width(width), height(height) {
 
 	}
 
 	// decodes
-	void SaveAsFile(unsigned char* data, const char* filename){
+	void SaveAsFile(unsigned char* data, const char* filename) {
 
 		FILE *f;
 
@@ -168,8 +159,7 @@ public:
 		f = fopen(filename, "wb");
 		fwrite(bmpfileheader, 1, 14, f);
 		fwrite(bmpinfoheader, 1, 40, f);
-		for (int i = 0; i < height; i++)
-		{
+		for (int i = 0; i < height; i++) {
 			// write one row and pad to have size of each row a multiple of 4B
 			fwrite(data + (width*(height - i - 1) * 3), 3, width, f);
 			fwrite(bmppad, 1, (4 - (width * 3) % 4) % 4, f);
@@ -179,9 +169,7 @@ public:
 };
 
 
-
-
-unsigned char* data;
+unsigned char* dataAlloc;
 
 // =================================================================================
 clock_t startTime;
@@ -192,7 +180,7 @@ clock_t endCalcTime;
 clock_t startBmpTime;
 clock_t endBmpTime;
 
-void WriteResult(){
+void WriteResult() {
 	float totalTime = float(clock() - startTime);
 	float allocTime = float(endAllocTime - startAllocTime);
 	float calcTime = float(endCalcTime - startCalcTime);
@@ -206,11 +194,10 @@ void WriteResult(){
 	printf("Total time:		%.f ms \n", totalTime);
 }
 
-int main(int argc, char ** argv) 
-{
+int main(int argc, char ** argv) {
 	startTime = clock();
 
-   if (argc != 8) {
+	if (argc != 8) {
 		cout << "Usage: " << argv[0] << " width height persistence octaves zoom seed outputImg" << endl;
 		exit(1);
 	}
@@ -221,7 +208,7 @@ int main(int argc, char ** argv)
 	int octaves = atoi(argv[4]);
 	float zoom = atof(argv[5]);
 	int seed = atoi(argv[6]);
-	char* outputImg  = (char*)malloc(sizeof(char) * strlen(argv[7]));
+	char* outputImg = (char*)malloc(sizeof(char) * strlen(argv[7]));
 	strcpy(outputImg, argv[7]);
 
 	/*int width = 128;
@@ -234,19 +221,19 @@ int main(int argc, char ** argv)
 
 	startAllocTime = clock();
 	// allocate bitmap array
-	if( data )
-		free( data );
-	data = (unsigned char *)malloc(3*width*height);
+	if (dataAlloc)
+		free(dataAlloc);
+	dataAlloc = (unsigned char *)malloc(3 * width*height);
 
 	// reset bites in data array
-	memset(data,0,sizeof(data));
+	memset(dataAlloc, 0, sizeof(dataAlloc));
 	endAllocTime = clock();
 	startCalcTime = clock();
 
 	// init perlin generator
 	PerlinNoise noise(seed);
 	// calculate perlin noise
-	noise.PerlinNoise2DPlane(data, width, height, persistence, octaves, zoom);
+	noise.PerlinNoise2DPlane(dataAlloc, width, height, persistence, octaves, zoom);
 
 	endCalcTime = clock();
 	startBmpTime = clock();
@@ -254,8 +241,8 @@ int main(int argc, char ** argv)
 	// init bitmap decoder
 	BmpDecoder decoder(width, height);
 	// write bitmap
-	decoder.SaveAsFile(data, outputImg);
-	delete[] data;
+	decoder.SaveAsFile(dataAlloc, outputImg);
+	delete[] dataAlloc;
 
 	endBmpTime = clock();
 	WriteResult();
