@@ -286,3 +286,9 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
+Examples/example_octave/Thumbs.db
+Examples/example_pers/Thumbs.db
+Examples/example_raw/Thumbs.db
+Examples/example_smooth/Thumbs.db
+PerlinNoise/Thumbs.db
+PerlinNoiseCuda/Thumbs.db
